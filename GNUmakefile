@@ -34,13 +34,18 @@ endif
 
 # Object files
 BOOT_OBJS = $(OBJDIR)/bootentry.o $(OBJDIR)/boot.o
+KERNEL_OBJS = $(OBJDIR)/kernel.ko
 # add rest here
+KERNEL_LINKER_FILES = link/kernel.ld link/shared.ld
 
 
 -include build/rules.mk
 
+$(OBJDIR)/%.ko: %.c $(KERNELBUILDSTAMPS)
+	$(call compile,$(KERNELCFLAGS) -O1 -DSIGNALOS_KERNEL -c $< -o $@,COMPILE $<)
+
 $(OBJDIR)/boot.o: $(OBJDIR)/%.o: boot.c $(KERNELBUILDSTAMPS)
-	$(call compile,$(CXXFLAGS) -Os -fomit-frame-pointer -DWEENSYOS_KERNEL -c $< -o $@,COMPILE $<)
+	$(call compile,$(CFLAGS) -Os -fomit-frame-pointer -DSIGNALOS_KERNEL -c $< -o $@,COMPILE $<)
 
 $(OBJDIR)/bootentry.o: $(OBJDIR)/%.o: \
 	bootentry.S  $(KERNELBUILDSTAMPS)
@@ -48,3 +53,58 @@ $(OBJDIR)/bootentry.o: $(OBJDIR)/%.o: \
 
 
 boot: $(BOOT_OBJS)
+
+$(OBJDIR)/kernel.full: $(KERNEL_OBJS) $(PROCESS_BINARIES) $(KERNEL_LINKER_FILES)
+	$(call link,-T $(KERNEL_LINKER_FILES) -o $@ $(KERNEL_OBJS) -b binary $(PROCESS_BINARIES),LINK)
+
+$(OBJDIR)/bootsector: $(BOOT_OBJS) link/boot.ld link/shared.ld
+	$(call link,-T link/boot.ld link/shared.ld -o $@.full $(BOOT_OBJS),LINK)
+	$(call run,$(OBJDUMP) -C -S $@.full >$@.asm)
+	$(call run,$(NM) -n $@.full >$@.sym)
+	$(call run,$(OBJCOPY) -S -O binary -j .text $@.full $@)
+
+$(OBJDIR)/kernel: $(OBJDIR)/kernel.full
+	$(call run,$(OBJCOPY) -j .text -j .rodata -j .data -j .bss -j .ctors -j .init_array $<,STRIP,$@)
+
+
+$(OBJDIR)/mkbootdisk: build/mkbootdisk.cc $(BUILDSTAMPS)
+	$(call run,$(HOSTCXX) -I. -std=gnu++1z -g -o $@,HOSTCOMPILE,$<)
+
+kernel: $(OBJDIR)/kernel
+
+$(QEMUIMAGEFILES): $(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector $(OBJDIR)/kernel
+	$(call run,$(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector $(OBJDIR)/kernel > $@,CREATE $@)
+
+all: $(QEMUIMAGEFILES)
+
+QEMUIMG = -M q35 \
+	-device piix4-ide,bus=pcie.0,id=piix4-ide \
+	-drive file=$(QEMUIMAGEFILES),if=none,format=raw,id=bootdisk \
+	-device ide-hd,drive=bootdisk,bus=piix4-ide.0
+
+run: run-$(QEMUDISPLAY)
+	@:
+run-graphic: $(QEMUIMAGEFILES) check-qemu
+	@echo '* Run `gdb -x build/signalos.gdb` to connect gdb to qemu.' 1>&2
+	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -gdb tcp::12949 $(QEMUIMG),QEMU $<)
+run-console: $(QEMUIMAGEFILES) check-qemu-console
+	@echo '* Run `gdb -x build/signalos.gdb` to connect gdb to qemu.' 1>&2
+	$(call run,$(QEMU) $(QEMUOPT) -curses -gdb tcp::12949 $(QEMUIMG),QEMU $<)
+run-monitor: $(QEMUIMAGEFILES) check-qemu
+	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -monitor stdio $(QEMUIMG),QEMU $<)
+run-gdb: run-gdb-$(QEMUDISPLAY)
+	@:
+run-gdb-graphic: $(QEMUIMAGEFILES) check-qemu
+	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -gdb tcp::12949 $(QEMUIMG) &,QEMU $<)
+	$(call run,sleep 0.5; gdb -x build/signalos.gdb,GDB)
+run-gdb-console: $(QEMUIMAGEFILES) check-qemu-console
+	$(call run,$(QEMU) $(QEMUOPT) -curses -gdb tcp::12949 $(QEMUIMG),QEMU $<)
+
+run-$(RUNSUFFIX): run
+run-graphic-$(RUNSUFFIX): run-graphic
+run-console-$(RUNSUFFIX): run-console
+run-monitor-$(RUNSUFFIX): run-monitor
+run-gdb-$(RUNSUFFIX): run-gdb
+run-gdb-graphic-$(RUNSUFFIX): run-gdb-graphic
+run-gdb-console-$(RUNSUFFIX): run-gdb-console
+

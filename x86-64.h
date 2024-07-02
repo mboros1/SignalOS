@@ -244,7 +244,27 @@ __always_inline void insl(int port, void* addr, int cnt) {
                  : "cc");
 }
 
-__always_inline void outb(int port, uint8_t data) {
+/**
+ * Writes an 8-bit value to the specified I/O port.
+ *
+ * This function uses the x86 `outb` instruction to send an 8-bit value (`data`)
+ * to an I/O port specified by `port`. The `outb` instruction is used for
+ * communication with hardware devices through I/O ports.
+ *
+ * The `data` parameter is placed in the `AL` register, and the `port` parameter
+ * is placed in the `DX` register before executing the `outb` instruction.
+ *
+ * Constraints:
+ * - `data` is an 8-bit value and will be placed in the `AL` register.
+ * - `port` is a 16-bit value and will be placed in the `DX` register.
+ *
+ * Example usage:
+ *     outb(0x3F8, 0xFF);  // Sends the value 0xFF to the I/O port 0x3F8.
+ *
+ * @param port The I/O port to write to. This is a 16-bit value.
+ * @param data The 8-bit value to write to the I/O port.
+ */
+__always_inline void outb(uint16_t port, uint8_t data) {
     asm volatile("outb %0, %w1" : : "a" (data), "d" (port));
 }
 

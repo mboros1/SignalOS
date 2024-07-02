@@ -8,7 +8,7 @@
 #
 #   This file contains the code loaded at that address.
 #   The `boot_start` routine switches the CPU out of compatibility mode,
-#   then calls `boot` from `boot.cc` to finish the booting process.
+#   then calls `boot` from `boot.c` to finish the booting process.
 #
 #   There is no need to understand this code in detail!
 #   (You may stop reading now.)

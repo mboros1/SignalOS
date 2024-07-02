@@ -1,0 +1,20 @@
+
+To run gdb:
+server:
+# run qemu with gdb server, debug output for registers, CPU reset, errors printed
+qemu-system-x86_64 -drive file=signalos.img,format=raw -s -S -d int,cpu_reset,guest_errors
+
+
+client:
+# run gdb debugger
+/opt/homebrew/bin/x86_64-elf-gdb
+
+# connect to running qemu instance with gdb server
+remote target localhost:1234
+
+# break at instruction of bootloader entry
+break *0x7c1c
+
+# have an asm layout
+layout asm
+
