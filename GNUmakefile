@@ -34,7 +34,7 @@ endif
 
 # Object files
 BOOT_OBJS = $(OBJDIR)/bootentry.o $(OBJDIR)/boot.o
-KERNEL_OBJS = $(OBJDIR)/kernel.ko
+KERNEL_OBJS = $(OBJDIR)/kernel.ko $(OBJDIR)/exception.ko
 # add rest here
 KERNEL_LINKER_FILES = link/kernel.ld link/shared.ld
 
@@ -43,6 +43,9 @@ KERNEL_LINKER_FILES = link/kernel.ld link/shared.ld
 
 $(OBJDIR)/%.ko: %.c $(KERNELBUILDSTAMPS)
 	$(call compile,$(KERNELCFLAGS) -O1 -DSIGNALOS_KERNEL -c $< -o $@,COMPILE $<)
+
+$(OBJDIR)/exception.ko: exception.S $(KERNELBUILDSTAMPS)
+	$(call assemble,-O2 -c $< -o $@,ASSEMBLE $<)
 
 $(OBJDIR)/boot.o: $(OBJDIR)/%.o: boot.c $(KERNELBUILDSTAMPS)
 	$(call compile,$(CFLAGS) -Os -fomit-frame-pointer -DSIGNALOS_KERNEL -c $< -o $@,COMPILE $<)
