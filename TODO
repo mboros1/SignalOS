@@ -1,6 +1,1 @@
-TODO: confirmed with objdump that kernel code looks correct
-TODO: confirmed with gdb that the boot.c code is walking through the code and then jumping to the correct kernel_entry location
-TODO: confirmed kernel_entry code is not there!
-TODO: something in boot.c is not working correctly, check that the code is actually loading
-TODO: set the breakpoint on boot(), after each print see what code is being read and what is being written
 

@@ -66,17 +66,20 @@ $(OBJDIR)/bootsector: $(BOOT_OBJS) link/boot.ld link/shared.ld
 	$(call run,$(NM) -n $@.full >$@.sym)
 	$(call run,$(OBJCOPY) -S -O binary -j .text $@.full $@)
 
+# $(OBJDIR)/kernel: $(OBJDIR)/kernel.full
+# 	$(call run,$(OBJCOPY) -j .text -j .data $<,STRIP,$@)
+# 	$(call run,$(OBJDUMP) -C -S $@.full >$@.asm)
 $(OBJDIR)/kernel: $(OBJDIR)/kernel.full
-	$(call run,$(OBJCOPY) -j .text -j .rodata -j .data -j .bss -j .ctors -j .init_array $<,STRIP,$@)
+	@echo "Copying sections from kernel.full to kernel"
+	./copy_kernel_sections.sh
+	$(call run,$(OBJDUMP) -C -S $@.full >$@.asm)
 
 
-$(OBJDIR)/mkbootdisk: build/mkbootdisk.cc $(BUILDSTAMPS)
-	$(call run,$(HOSTCXX) -I. -std=gnu++1z -g -o $@,HOSTCOMPILE,$<)
 
 kernel: $(OBJDIR)/kernel
 
-$(QEMUIMAGEFILES): $(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector $(OBJDIR)/kernel
-	$(call run,$(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector $(OBJDIR)/kernel > $@,CREATE $@)
+$(QEMUIMAGEFILES): $(OBJDIR)/bootsector $(OBJDIR)/kernel
+	$(call run, ./mk_img.sh)
 
 all: $(QEMUIMAGEFILES)
 

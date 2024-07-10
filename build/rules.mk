@@ -26,7 +26,7 @@ CCOMMONFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 
 
 ASFLAGS := $(CCOMMONFLAGS)
 ASFLAGS += $(shell $(CC) -no-integrated-as -E -x c /dev/null >/dev/null 2>&1 && echo -no-integrated-as)
-CFLAGS := $(CFLAGS) $(CCOMMONFLAGS) -std=gnu11 -gdwarf
+CFLAGS := $(CFLAGS) $(CCOMMONFLAGS) -std=gnu11 -gdwarf -ffunction-sections
 DEPCFLAGS = -MD -MF $(DEPSDIR)/$*.d -MP
 DEPCFLAGS_AT = -MD -MF $(DEPSDIR)/$(@F).d -MP
 
