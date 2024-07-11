@@ -7,6 +7,9 @@
 #include <stddef.h>
 
 
+typedef int pid_t;
+
+
 #define __section(x) __attribute__((section(x)))
 #define __no_asan    __attribute__((no_sanitize_address))
 #define __noinline   __attribute__((noinline))
