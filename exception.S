@@ -31,3 +31,71 @@ kernel_entry:
 1:      movq $0, %rdi
 2:      jmp kernel_main
 
+
+
+// Exception handlers and interrupt descriptor table
+//    This code creates an exception handler for all 256 possible
+//    exceptions, and initializes a table in the
+//    `.interrupt_descriptors` section containing those handlers.
+//    The `init_hardware` kernel function installs this table.
+
+// The `exception_handler` macro creates one exception handler
+.altmacro
+.macro exception_handler num
+exception_entry_\num:
+        // push zero error code, unless exception did so already
+    .if \num != INT_DF && (\num < INT_TS || \num > INT_PF) && \num != INT_AC
+        pushq $0
+    .endif
+        // push exception number
+        pushq $\num
+        // jump to exception entry point
+        jmp exception_entry
+
+        // add that handler to the `.interrupt_descriptors` section
+    .pushsection .interrupt_descriptors, "aw", @progbits
+        .quad exception_entry_\num
+        .quad 0
+    .popsection
+.endm
+
+// now create all 256 exception handlers and table
+.set exception_number, 0
+.rept 256
+exception_handler %exception_number
+.set exception_number, exception_number + 1
+.endr
+
+
+
+// Exception entry point
+//    Most exception handlers jump here.
+.globl exception_entry
+exception_entry:
+        push %gs
+        push %fs
+        pushq %r15
+        pushq %r14
+        pushq %r13
+        pushq %r12
+        pushq %r11
+        pushq %r10
+        pushq %r9
+        pushq %r8
+        pushq %rdi
+        pushq %rsi
+        pushq %rbp
+        pushq %rbx
+        pushq %rdx
+        pushq %rcx
+        pushq %rax
+        movq %rsp, %rdi
+
+        // load kernel page table
+        movq $kernel_pagetable, %rax
+        movq %rax, %cr3
+
+        call kernel_exception
+        // `exception` should never return.
+
+

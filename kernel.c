@@ -1,3 +1,5 @@
+#include "kernel.h"
+#include "x86-64.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -5,6 +7,9 @@
 static uint16_t *const VGA_BUFFER = (uint16_t *)0xB8000;
 static const int VGA_WIDTH = 80;
 static const int VGA_HEIGHT = 25;
+
+
+x86_64_pagetable kernel_pagetable[5];
 
 // VGA color attributes
 enum vga_color {
@@ -57,6 +62,29 @@ void vga_print(const char *str, uint8_t color) {
     }
     VGA_BUFFER[index++] = vga_entry(str[i], color);
   }
+}
+
+void kernel_exception(regstate *regs) {
+  // TODO: save registers to 'current' process
+  // TODO: maybe some optional logging
+
+  switch (regs->reg_intno) {
+  case INT_IRQ: {
+    // TODO: track ticks, handle lapic state
+    // TODO: schedule next process
+    break;
+    }
+    case INT_PF: {
+    // TODO: implement page fault logic
+    break;
+    }
+    default:
+    // TODO: unhandled exception, put an error here
+    return;
+  }
+
+
+  // TODO: schedule here in case we fall through case statement
 }
 
 int kernel_main() {

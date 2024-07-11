@@ -522,7 +522,7 @@ typedef struct x86_64_gatedescriptor {
 #define X86SEG_G        (1UL << 55)
 
 // Application segment type bits
-#define X86SEG_A        (0x1UL << 40) // Accessed
+#define X86SEG_A /* Accessed */       (0x1UL << 40) // Accessed
 #define X86SEG_R        (0x2UL << 40) // Readable (code segment)
 #define X86SEG_W        (0x2UL << 40) // Writable (data segment)
 #define X86SEG_C        (0x4UL << 40) // Conforming (code segment)
