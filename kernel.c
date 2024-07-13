@@ -8,6 +8,9 @@ static uint16_t *const VGA_BUFFER = (uint16_t *)0xB8000;
 static const int VGA_WIDTH = 80;
 static const int VGA_HEIGHT = 25;
 
+static void init_kernel_memory();
+static void init_interrupts();
+static void init_cpu_state();
 
 x86_64_pagetable kernel_pagetable[5];
 
@@ -58,6 +61,8 @@ void vga_print(const char *str, uint8_t color) {
     if (index >= VGA_WIDTH * VGA_HEIGHT) {
       // If we reach the end of the screen, reset the index (simple scroll
       // simulation)
+      // TODO: instead of wrapping to beginning, shift text up like a normal
+      // terminal
       index = 0;
     }
     VGA_BUFFER[index++] = vga_entry(str[i], color);
@@ -73,18 +78,51 @@ void kernel_exception(regstate *regs) {
     // TODO: track ticks, handle lapic state
     // TODO: schedule next process
     break;
-    }
-    case INT_PF: {
+  }
+  case INT_PF: {
     // TODO: implement page fault logic
     break;
-    }
-    default:
+  }
+  default:
     // TODO: unhandled exception, put an error here
     return;
   }
 
-
   // TODO: schedule here in case we fall through case statement
+}
+
+void init_kernel_memory() {
+  // TODO: initialize segments. references kernel_gdt_segments
+  //        uses set_app_segment and set_sys_segment
+
+  // TODO: initialize kernel page table.
+
+  // TODO: user accessible mappings set up
+
+  // TODO: wrcr3 set page table for some reason?
+}
+
+void init_interrupts() {
+  // TODO: look at x86 specific interrupt enablement.
+
+  // TODO: loop over interrupt_descriptors created in exceptions.S, use some
+  //       set_gate code
+
+  // TODO: some outb to write to disk specific values
+}
+
+void init_cpu_state() {
+  // TODO: set up kernel taskstate so kernel can accept interrupts
+
+  // TODO: load segment descriptor table
+
+  // TODO: initialize segments
+
+  // TODO: set up control registers
+
+  // TODO: set up syscall/sysret
+
+  // TODO: initialize LAPIC
 }
 
 int kernel_main() {
