@@ -98,4 +98,65 @@ exception_entry:
         call kernel_exception
         // `exception` should never return.
 
+// syscall_entry
+//    Kernel entry point for the `syscall` instruction
+
+        .globl syscall_entry
+syscall_entry:
+        movq %rsp, KERNEL_STACK_TOP - 16 // save entry %rsp to kernel stack
+        movq $KERNEL_STACK_TOP, %rsp     // change to kernel stack
+
+        // structure used by `iret`:
+        pushq $(SEGSEL_APP_DATA + 3)   // %ss
+        subq $8, %rsp                  // skip saved %rsp
+        pushq %r11                     // %rflags
+        pushq $(SEGSEL_APP_CODE + 3)   // %cs
+        pushq %rcx                     // %rip
+
+        // other registers:
+        subq $8, %rsp                  // error code unused
+        pushq $-1                      // reg_intno
+        push %gs
+        push %fs
+        pushq %r15 // callee saved
+        pushq %r14 // callee saved
+        pushq %r13 // callee saved
+        pushq %r12 // callee saved
+        subq $8, %rsp                  // %r11 clobbered by `syscall`
+        pushq %r10
+        pushq %r9
+        pushq %r8
+        pushq %rdi
+        pushq %rsi
+        pushq %rbp // callee saved
+        pushq %rbx // callee saved
+        pushq %rdx
+        subq $8, %rsp                  // %rcx clobbered by `syscall`
+        pushq %rax
+
+        // load kernel page table
+        movq $kernel_pagetable, %rax
+        movq %rax, %cr3
+
+        // call syscall()
+        movq %rsp, %rdi
+        call _Z7syscallP8regstate
+
+        // check process state
+        movq current, %rcx
+        movl 12(%rcx), %ecx
+        cmpl $P_RUNNABLE, %ecx
+        jne proc_runnable_fail
+
+        // load process page table
+        movq current, %rcx
+        movq (%rcx), %rcx
+        movq %rcx, %cr3
+
+        // skip over other registers
+        addq $(8 * 19), %rsp
+
+        // return to process
+        iretq
+
 

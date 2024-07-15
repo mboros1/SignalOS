@@ -20,6 +20,8 @@ SECTIONS {
     {
         *(.data)
         *(.data.*)
+        interrupt_descriptors = .;
+        KEEP (*(.interrupt_descriptors));
     }
 
     .bss BLOCK(4k) : ALIGN(4k)

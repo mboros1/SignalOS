@@ -16,6 +16,19 @@ extern x86_64_pagetable kernel_pagetable[];
 #define IRQ_ERROR               19
 #define IRQ_SPURIOUS            31
 
+// kernel values hard coded
+#define KERNEL_START_ADDR       0x40000
+#define KERNEL_STACK_TOP        0x80000
+
+// Segment selectors
+#define SEGSEL_BOOT_CODE        0x8             // boot code segment
+#define SEGSEL_KERN_CODE        0x8             // kernel code segment
+#define SEGSEL_KERN_DATA        0x10            // kernel data segment
+#define SEGSEL_APP_CODE         0x18            // application code segment
+#define SEGSEL_APP_DATA         0x20            // application data segment
+#define SEGSEL_TASKSTATE        0x28            // task state segment
+
+//
 // Process descriptor type
 typedef struct {
     x86_64_pagetable* pagetable;        // process's page table

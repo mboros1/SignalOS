@@ -34,7 +34,7 @@ endif
 
 # Object files
 BOOT_OBJS = $(OBJDIR)/bootentry.o $(OBJDIR)/boot.o
-KERNEL_OBJS = $(OBJDIR)/kernel.ko $(OBJDIR)/exception.ko
+KERNEL_OBJS = $(OBJDIR)/kernel.ko $(OBJDIR)/exception.ko $(OBJDIR)/lapic.ko
 # add rest here
 KERNEL_LINKER_FILES = link/kernel.ld link/shared.ld
 
