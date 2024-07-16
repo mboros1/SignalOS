@@ -140,21 +140,21 @@ syscall_entry:
 
         // call syscall()
         movq %rsp, %rdi
-        call _Z7syscallP8regstate
+        call syscall
 
         // check process state
-        movq current, %rcx
-        movl 12(%rcx), %ecx
-        cmpl $P_RUNNABLE, %ecx
-        jne proc_runnable_fail
+        //movq current, %rcx
+        //movl 12(%rcx), %ecx
+        //cmpl $P_RUNNABLE, %ecx
+        //jne proc_runnable_fail
 
         // load process page table
-        movq current, %rcx
-        movq (%rcx), %rcx
-        movq %rcx, %cr3
+        //movq current, %rcx
+        //movq (%rcx), %rcx
+        //movq %rcx, %cr3
 
         // skip over other registers
-        addq $(8 * 19), %rsp
+        //addq $(8 * 19), %rsp
 
         // return to process
         iretq

@@ -24,7 +24,7 @@ endif
 # and to quit after the first triple fault instead of rebooting.
 
 # control number of CPUs used by QEMU
-NCPU = 1
+NCPU = 4
 LOG ?= file:log.txt
 QEMUOPT = -net none -parallel $(LOG) -smp $(NCPU)
 ifeq ($(D),1)
@@ -34,7 +34,7 @@ endif
 
 # Object files
 BOOT_OBJS = $(OBJDIR)/bootentry.o $(OBJDIR)/boot.o
-KERNEL_OBJS = $(OBJDIR)/kernel.ko $(OBJDIR)/exception.ko $(OBJDIR)/lapic.ko
+KERNEL_OBJS = $(OBJDIR)/kernel.ko $(OBJDIR)/exception.ko $(OBJDIR)/lapic.ko $(OBJDIR)/vmiter.ko
 # add rest here
 KERNEL_LINKER_FILES = link/kernel.ld link/shared.ld
 

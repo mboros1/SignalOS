@@ -9,6 +9,10 @@
 
 typedef int pid_t;
 
+typedef __builtin_va_list va_list;
+#define va_start(val, last) __builtin_va_start(val, last)
+#define va_arg(val, type) __builtin_va_arg(val, type)
+#define va_end(val) __builtin_va_end(val)
 
 #define __section(x) __attribute__((section(x)))
 #define __no_asan    __attribute__((no_sanitize_address))
